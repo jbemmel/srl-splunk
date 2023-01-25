@@ -1,0 +1,57 @@
+name: srl-splunk-lab
+
+topology:
+ kinds:
+  srl:
+    # Need IXR D2 or D3 for EVPN/VXLAN support
+    type: ixrd2 # See https://www.nokia.com/networks/products/7250-interconnect-router/
+    # Uses custom container image containing auto-config agent
+    # image: registry.srlinux.dev/pub/srlinux # latest, or srlinux:21.3.1-410
+    image: ghcr.io/nokia/srlinux:latest
+    # image: srl/auto-config-v2:latest
+    # extras:
+    #  srl-agents: [ ../srl-self-organizing/auto-config-agent.yml ]
+  #binds:
+  #  - ./appmgr:/etc/opt/srlinux/appmgr:ro
+  linux:
+    image: frr-with-lldp:latest # Custom built image with lldpad and daemons included
+
+ nodes:
+  leaf1:  { kind: srl, startup-config: delta-auto-config.cmd }
+  # spine1: { kind: srl, startup-config: auto-spine.cfg.json }
+
+  h1:
+    kind: linux
+
+  ###### Splunk STACK ######
+
+  splunk-connect-for-syslog:
+    kind: linux
+    image: splunk/scs
+    mgmt_ipv4: 172.20.20.10 # Pick a fixed IP
+    startup-delay: 30 # Give splunk a chance to start first
+    env:
+      SC4S_DEST_SPLUNK_HEC_DEFAULT_URL: https://172.20.20.11:8088
+      SC4S_DEST_SPLUNK_HEC_DEFAULT_TOKEN: 1c1e59c3-27c2-48dc-b85b-34f8ffef7600
+      SC4S_DEST_SPLUNK_HEC_DEFAULT_TLS_VERIFY: no
+
+  splunk:
+    kind: linux
+    image: splunk/splunk
+    env:
+      SPLUNK_START_ARGS: "--accept-license"
+      SPLUNK_PASSWORD: changeme
+    binds:
+    - splunk.inputs.conf:/opt/splunk-etc/system/local/inputs.conf
+    - splunk_hec.inputs.conf:/opt/splunk-etc/apps/splunk_httpinput/local/inputs.conf
+    #  - configs/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    # cmd: --config.file=/etc/prometheus/prometheus.yml
+    mgmt_ipv4: 172.20.20.11 # Pick a fixed IP
+    ports:
+      - 8000:8000  # Web UI
+      - 8088:8088  # HTTP event collector
+      # - 514:514    # syslog, not needed
+
+ links:
+# - endpoints: ["spine1:e1-1", "leaf1:e1-1"]
+ - endpoints: ["leaf1:e1-1", "h1:eth1"]  # Linux
