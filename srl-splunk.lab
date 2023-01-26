@@ -43,13 +43,14 @@ topology:
       SPLUNK_PASSWORD: changeme
     binds:
     - splunk.inputs.conf:/opt/splunk-etc/system/local/inputs.conf
+    - splunk.indexes.conf:/opt/splunk-etc/system/local/indexes.conf
     - splunk_hec.inputs.conf:/opt/splunk-etc/apps/splunk_httpinput/local/inputs.conf
     #  - configs/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
     # cmd: --config.file=/etc/prometheus/prometheus.yml
     mgmt_ipv4: 172.20.20.11 # Pick a fixed IP
     ports:
       - 8000:8000  # Web UI
-      - 8088:8088  # HTTP event collector
+      # - 8088:8088  # HTTP event collector
       # - 514:514    # syslog, not needed
 
  links:
