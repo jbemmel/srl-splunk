@@ -35,7 +35,7 @@ topology:
       SC4S_DEST_SPLUNK_HEC_DEFAULT_TOKEN: 1c1e59c3-27c2-48dc-b85b-34f8ffef7600
       SC4S_DEST_SPLUNK_HEC_DEFAULT_TLS_VERIFY: no
     binds:
-    - app-nokia_srlinux.conf:/etc/syslog-ng/conf.d/conflib/syslog/app-nokia_srlinux.conf
+    - app-syslog-nokia_srlinux.conf:/etc/syslog-ng/conf.d/conflib/syslog/app-syslog-nokia_srlinux.conf
 
   splunk:
     kind: linux
